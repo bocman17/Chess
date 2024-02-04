@@ -14,6 +14,7 @@ namespace ChessUI
     {
         private readonly Image[,] pieceImages = new Image[8, 8];
         private readonly Rectangle[,] highlights = new Rectangle[8, 8];
+        private readonly Rectangle[,] checkHighlights = new Rectangle[8, 8];
         private readonly Dictionary<Position, Move> moveCache = new Dictionary<Position, Move>();
 
         private GameState gameState;
@@ -43,16 +44,23 @@ namespace ChessUI
                     Rectangle highlight = new Rectangle();
                     highlights[r, c] = highlight;
                     HighlightGrid.Children.Add(highlight);
+
+                    Rectangle checkHighlight = new Rectangle();
+                    checkHighlights[r, c] = checkHighlight;
+                    CheckHighlightGrid.Children.Add(checkHighlight);
                 }
             }
         }
 
         private void DrawBoard(Board board)
         {
+            if (board.IsInCheck(gameState.CurrentPlayer))
+            {
+                ShowCheckHighlight(gameState.CurrentPlayer, board);
+            }
 
             for (int r = 0; r < 8; r++)
             {
-
                 for (int c = 0; c < 8; c++)
                 {
                     Piece piece = board[r, c];
@@ -128,6 +136,7 @@ namespace ChessUI
 
         private void HandleMove(Move move)
         {
+            HideCheckHighlights(gameState.CurrentPlayer, gameState.Board);
             gameState.MakeMove(move);
             DrawBoard(gameState.Board);
             SetCursor(gameState.CurrentPlayer);
@@ -173,6 +182,21 @@ namespace ChessUI
             {
                 highlights[to.Row, to.Column].Fill = Brushes.Transparent;
             }
+        }
+
+        private void ShowCheckHighlight(Player player, Board board)
+        {
+            Color color = Color.FromRgb(201, 42, 42);
+
+            Position kingPos = board.FindPiece(player, PieceType.King);
+            checkHighlights[kingPos.Row, kingPos.Column].Fill = new SolidColorBrush(color);
+        }
+
+        private void HideCheckHighlights(Player player, Board board)
+        {
+            Position kingPos = board.FindPiece(player, PieceType.King);
+
+            checkHighlights[kingPos.Row, kingPos.Column].Fill = Brushes.Transparent;
         }
 
         private void SetCursor(Player player)

@@ -171,7 +171,7 @@
 
             return wBishopPos.SquareColor() == bBishopPos.SquareColor();
         }
-        private Position FindPiece(Player color, PieceType type)
+        public Position FindPiece(Player color, PieceType type)
         {
             return PiecePositionFor(color).First(pos => this[pos].Type == type);
         }

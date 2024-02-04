@@ -24,6 +24,11 @@
                          Columns="8">
             </UniformGrid>
 
+            <UniformGrid x:Name="CheckHighlightGrid"
+             Rows="8"
+             Columns="8">
+            </UniformGrid>
+
             <UniformGrid x:Name="PieceGrid"
                          Rows="8"
                          Columns="8"
