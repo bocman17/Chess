@@ -50,4 +50,8 @@
     <Resource Include="Assets\RookW.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Sounds\" />
+  </ItemGroup>
+
 </Project>

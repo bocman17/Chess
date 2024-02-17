@@ -4,6 +4,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Input;
 using ChessLogic;
+using System.Media;
 
 namespace ChessUI
 {
@@ -17,6 +18,8 @@ namespace ChessUI
         private readonly Rectangle[,] checkHighlights = new Rectangle[8, 8];
         private readonly Dictionary<Position, Move> moveCache = new Dictionary<Position, Move>();
 
+        private SoundPlayer soundPlayer;
+
         private GameState gameState;
         private Position selectedPos = null;
 
@@ -28,6 +31,9 @@ namespace ChessUI
             gameState = new GameState(Player.White, Board.Initial());
             DrawBoard(gameState.Board);
             SetCursor(gameState.CurrentPlayer);
+
+            soundPlayer = new SoundPlayer(@"C:\repos\Chess\ChessUI\Sounds\game-start.wav");
+            soundPlayer.Play();
         }
 
         private void InitializeBoard()
@@ -57,6 +63,10 @@ namespace ChessUI
             if (board.IsInCheck(gameState.CurrentPlayer))
             {
                 ShowCheckHighlight(gameState.CurrentPlayer, board);
+
+                soundPlayer = new SoundPlayer(@"C:\repos\Chess\ChessUI\Sounds\move-check.wav");
+                soundPlayer.Play();
+                soundPlayer.Dispose();
             }
 
             for (int r = 0; r < 8; r++)
@@ -85,7 +95,7 @@ namespace ChessUI
             }
             else
             {
-                OnToPositionSelected(pos);
+                OnToPositionSelected(pos, gameState.Board);
             }
         }
         private void OnFromPositionSelected(Position pos)
@@ -100,7 +110,7 @@ namespace ChessUI
             }
         }
 
-        private void OnToPositionSelected(Position pos)
+        private void OnToPositionSelected(Position pos, Board board)
         {
             selectedPos = null;
             HideHighlights();
@@ -109,16 +119,16 @@ namespace ChessUI
             {
                 if (move.Type == MoveType.PawnPromotion)
                 {
-                    HandlePromotoion(move.FromPos, move.ToPos);
+                    HandlePromotoion(move.FromPos, move.ToPos, board);
                 }
                 else
                 {
-                    HandleMove(move);
+                    HandleMove(move, board);
                 }
             }
         }
 
-        private void HandlePromotoion(Position fromPos, Position toPos)
+        private void HandlePromotoion(Position fromPos, Position toPos, Board board)
         {
             pieceImages[toPos.Row, toPos.Column].Source = Images.GetImage(gameState.CurrentPlayer, PieceType.Pawn);
             pieceImages[fromPos.Row, fromPos.Column].Source = null;
@@ -130,19 +140,39 @@ namespace ChessUI
             {
                 MenuContainer.Content = null;
                 Move promMove = new PawnPromotion(fromPos, toPos, type);
-                HandleMove(promMove);
+                HandleMove(promMove, board);
             };
         }
 
-        private void HandleMove(Move move)
+        private void HandleMove(Move move, Board board)
         {
             HideCheckHighlights(gameState.CurrentPlayer, gameState.Board);
+
+            if (( move.Type == MoveType.Normal && board[move.ToPos] != null ) || move.Type == MoveType.EnPassant)
+            {
+                soundPlayer = new SoundPlayer(@"C:\repos\Chess\ChessUI\Sounds\capture.wav");
+                soundPlayer.Play();
+                soundPlayer.Dispose();
+            }
+            else if (( move.Type == MoveType.Normal || move.Type == MoveType.DoublePawn ) && board[move.ToPos] == null)
+            {
+                soundPlayer = new SoundPlayer(@"C:\repos\Chess\ChessUI\Sounds\move-self.wav");
+                soundPlayer.Play();
+                soundPlayer.Dispose();
+            }
+
             gameState.MakeMove(move);
             DrawBoard(gameState.Board);
+
             SetCursor(gameState.CurrentPlayer);
+
 
             if (gameState.IsGameOver())
             {
+                soundPlayer = new SoundPlayer(@"C:\repos\Chess\ChessUI\Sounds\game-win.wav");
+                soundPlayer.Play();
+                soundPlayer.Dispose();
+
                 ShowGameOver();
             }
         }

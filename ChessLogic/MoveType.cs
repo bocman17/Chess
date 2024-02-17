@@ -7,6 +7,7 @@
         CastleQS,
         DoublePawn,
         EnPassant,
-        PawnPromotion
+        PawnPromotion,
+        Capture
     }
 }
